@@ -1,0 +1,60 @@
+version: "3.5"
+
+
+services:
+  postgres_db:
+    image: postgres:alpine
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5434:${DB_PORT}"
+    volumes: [ './postgres/db/:/var/lib/postgresql/data/', './postgres/db/:/logs/' ]
+    command: ["postgres", "-c", "log_statement=all"]
+    expose:
+      - 5434
+    networks:
+      wb_parser_network:
+        ipv4_address: 192.168.55.4
+
+#  django:
+#    build: .
+#    container_name: django
+#    command: bash -c "
+#      python manage.py migrate
+#      && gunicorn wb_parser.wsgi:application --bind "0.0.0.0:8080" --workers 3
+#      "
+#    restart: unless-stopped
+#    depends_on:
+#      - postgres_db
+#    ports:
+#      - "8080:8080"
+#    networks:
+#      wb_parser_network:
+#        ipv4_address: 192.168.55.5
+#
+#  nginx:
+#    container_name: "nginx"
+#    image: nginx:alpine
+#    depends_on:
+#      - django
+#    volumes:
+#      - ./wb_parser/static/:/static
+#      - ./wb_parser/media/:/media
+#      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+#    ports:
+#      - "80:80"
+#    networks:
+#      wb_parser_network:
+#        ipv4_address: 192.168.55.6
+
+networks:
+  wb_parser_network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.168.55.0/24
+          gateway: 192.168.55.1
