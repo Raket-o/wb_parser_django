@@ -1,33 +1,106 @@
-<!doctype html>
+{% extends "base.html" %}
 {% load static %}
-<!--[if lt IE 7 ]> <html class="ie ie6 ie-lt10 ie-lt9 ie-lt8 ie-lt7 no-js" lang="en"> <![endif]-->
-<!--[if IE 7 ]><html class="ie ie7 ie-lt10 ie-lt9 ie-lt8 no-js" lang="en"> <![endif]-->
-<!--[if IE 8 ]><html class="ie ie8 ie-lt10 ie-lt9 no-js" lang="en"> <![endif]-->
-<!--[if IE 9 ]><html class="ie ie9 ie-lt10 no-js" lang="en"> <![endif]-->
-<!--[if gt IE 9]><!-->
-<html class="no-js" lang="en">
-<!--<![endif]-->
 
-<head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <link rel="shortcut icon" href="{% static '/favicon.ico' %}" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" >
+{% block title %}
+Аналитика товара
+{% endblock %}
 
-<!--    <link rel="stylesheet" href="{% static 'css/left-nav-style.css' %}">-->
-    <!--[if lt IE 9]>
-    <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <title>
-        {% block title %}
-        {% endblock %}
-    </title>
-</head>
+{% block header %}
+    <div style="margin: 10px; text-align: center";>
+        <h1>
+            Аналитика товара:
+        </h1>
+    </div>
+{% endblock %}
+    
+{% block content %}
+    <div style="display: flex; margin: 10px;">
+        <div style="width: 50%;">
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <br>
+                <div>
+                    <input class="form-control" type="text" placeholder="Найти на Wildberries" name="query" aria-label="query">
+                    <button type="submit" class="btn btn-primary" style="margin: 10px;">Поиск</button>
+                </div>
+            </form>
 
-<body>
-    {% block content %}
-    {% endblock %}
-</body>
+            <table class="table table-bordered">
+                <div id="sorting-container">
+                </div>
 
-</html>
+                <tr>
+                    <th>Название</th>
+                    <th>₽</th>
+                    <th>₽ со скидкой</th>
+                    <th>Рейтинг</th>
+                    <th>Отзывы</th>
+                </tr>
+                <tbody>
+                    {% for product in object_list %}
+                        <tr>
+                            <td><a target="_blank" href="https://www.wildberries.ru/catalog/{{ product.wb_id }}/detail.aspx">{{ product.name }}</a></td>
+                            <td style="text-decoration: line-through">{{ product.price }}</td>
+                            <td>{{ product.discount_price }}</td>
+                            <td>{{ product.rating }}</td>
+                            <td>{{ product.feedback_counts }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {% if is_paginated %}
+                <div style="display: flex;  justify-content:center;">
+                    {% if page_obj.has_previous %}
+                        <div>
+                            <a href="{% querystring page=page_obj.previous_page_number %}">
+                                <button type="submit" class="btn btn-secondary"> <<< </button>
+                            </a>
+                        </div>
+                    {% endif %}
+                    <div style=" padding: 7px; display: block; margin: 0px 10px; text-align: center; align-items: center;">
+                        {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                    </div>
+                    {% if page_obj.has_next %}
+                        <div>
+                            <a href="{% querystring page=page_obj.next_page_number %}">
+                                <button type="submit" class="btn btn-secondary"> >>> </button>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+
+        <div style="margin: 10px;">
+            <div id="price-filter"
+                data-min-price="{{ min_price }}"
+                data-max-price="{{ max_price }}">
+            </div>
+
+            <div id="rating-filter"
+                data-min-rating="{{ min_rating|default:0 }}"
+                data-max-rating="{{ max_rating|default:5 }}">
+            </div>
+
+            <div id="feedback_counts"
+                data-min-reviews="{{ min_feedback_counts }}"
+                data-max-reviews="{{ max_feedback_counts }}">
+            </div>
+
+            <a href="{% url 'parser:products_list' %}">
+                <button type="button" class="btn btn-danger">Cбросить фильтр</button>
+            </a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; justify-content: normal; align-items: center">
+            <div>
+                <div class="grafics_histogram"></div>
+            </div>
+            <div>
+                <div class="linear_graph">
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

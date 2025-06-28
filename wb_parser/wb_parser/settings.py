@@ -33,7 +33,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "")
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY") != "wegarevysetubsrtuvsrtvhsrthc23552erc4y"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG") != "False"
@@ -72,6 +72,7 @@ INSTALLED_APPS = [
     "whitenoise.runserver_nostatic",
     "rest_framework",
     "django_filters",
+    "drf_spectacular",
 
     "parser.apps.ParserConfig",
 ]
@@ -124,6 +125,14 @@ DATABASES = {
         "PORT": db_port,
     }
 }
+
+# Caches
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.dummy.DummyCache",
+    }
+}
+CACHE_SECONDS = 60
 
 
 # Password validation
@@ -184,8 +193,16 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.TokenAuthentication",
     ),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 5,
+    "PAGE_SIZE": 10,
     "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Product Analytics Service Management API",
+    "DESCRIPTION": "Сервис аналитики товаров.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Logger
